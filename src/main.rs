@@ -22,7 +22,7 @@ fn unzip_content(sha: &str) {
     let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
     
     // remove \n character from the end of the string
-    let s = s.trim_start_matches(char::is_numeric));
+    let s = s.trim_start_matches(char::is_numeric);
 
     println!("{}", s);
 
