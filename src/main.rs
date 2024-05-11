@@ -26,7 +26,7 @@ fn unzip_content(sha: &str) {
     print!("{}", s);
 }
 
-fn hash_object(file_name: &str) -> String {
+fn hash_object(file_name: &str) {
     
     // load the file content
     let mut file = fs::File::open(file_name).unwrap();
