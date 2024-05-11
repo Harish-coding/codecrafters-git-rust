@@ -27,27 +27,34 @@ fn unzip_content(sha: &str) {
 }
 
 fn hash_object(file_name: &str) -> String {
-    // compute the SHA hash of a Git object. For example, if the contents of a file are hello world, the blob object file would look like this (after Zlib decompression): blob 11\0hello world
+    
+    // load the file content
     let mut file = fs::File::open(file_name).unwrap();
     let mut content = Vec::new();
     file.read_to_end(&mut content).unwrap();
 
-    let mut hasher = Sha1::new();
-    hasher.update(&content);
-    let sha = Sha1::digest(&hasher).to_string();
+    // update the content with the header
+    let mut header = format!("blob {}\x00", content.len());
+    header.push_str(std::str::from_utf8(&content).unwrap());
 
-    let mut compressed = Vec::new();
-    compressed.extend_from_slice(b"blob ");
-    compressed.extend_from_slice(content.len().to_string().as_bytes());
-    compressed.push(0);
-    compressed.extend_from_slice(&content);
+    // hash the content
+    let mut hasher = Sha1::new();
+    hasher.update(header.clone());
+    let result = hasher.finalize();
+    // hash in hex format
+    let hash = format!("{:x}", result);
+
+    // create the object file
+    let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
+    fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
+    let mut file = fs::File::create(path).unwrap();
     let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-    encoder.write_all(&compressed).unwrap();
+    encoder.write_all(header.as_bytes()).unwrap();
     let compressed = encoder.finish().unwrap();
-    let path = format!(".git/objects/{}/{}", &sha[..2], &sha[2..]);
-    fs::create_dir_all(format!(".git/objects/{}", &sha[..2])).unwrap();
-    fs::write(&path, compressed).unwrap();
-    sha
+    file.write_all(&compressed).unwrap();
+
+    // return the hash
+    hash
 }
 
 fn main() {
