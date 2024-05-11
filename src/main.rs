@@ -24,6 +24,17 @@ fn unzip_content(sha: &str) {
     print!("{}", s);
 }
 
+fn hash_object(file_name: &str) -> String {
+    let mut file = fs::File::open(file_name).unwrap();
+    let mut content = Vec::new();
+    file.read_to_end(&mut content).unwrap();
+    let sha = hash_object(&content);
+    let sha = git_hash::hash_object(&content);
+    let path = format!(".git/objects/{}/{}", &sha[..2], &sha[2..]);
+    fs::write(path, git_hash::compress(&content)).unwrap();
+    sha
+}
+
 fn main() {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     // println!("Logs from your program will appear here!");
@@ -35,7 +46,13 @@ fn main() {
     } else if args[1] == "cat-file" {
         // git cat-file -p <blob_sha>
         unzip_content(&args[3]);
-    } else {
+    } else if args[1] == "hash-object"{
+        // git hash-object -w <file>
+        
+        println!("{}", hash_object(&args[3]);
+
+    } 
+    else {
         println!("unknown command: {}", args[1])
     }
 }
