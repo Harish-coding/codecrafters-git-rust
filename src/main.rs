@@ -2,6 +2,9 @@ use std::env;
 use std::fs;
 use std::io::Read;
 use std::io::Write;
+use sha1::Sha1;
+
+
 
 
 fn init_repo() {
