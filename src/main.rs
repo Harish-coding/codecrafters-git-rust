@@ -1,6 +1,9 @@
 use std::env;
 use std::fs;
 use std::io::Read;
+use std::io::Write;
+
+mod git_hash;
 
 
 fn init_repo() {
@@ -28,8 +31,7 @@ fn hash_object(file_name: &str) -> String {
     let mut file = fs::File::open(file_name).unwrap();
     let mut content = Vec::new();
     file.read_to_end(&mut content).unwrap();
-    let sha = hash_object(&content);
-    let sha = git_hash::hash_object(&content);
+    let sha = git_hash::hash_object(&content, git_hash::ObjectType::Blob);
     let path = format!(".git/objects/{}/{}", &sha[..2], &sha[2..]);
     fs::write(path, git_hash::compress(&content)).unwrap();
     sha
