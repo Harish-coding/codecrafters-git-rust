@@ -68,7 +68,24 @@ fn ls_tree(tree_sha: &str) {
     // use Vec::new()
     let mut s = Vec::new();
     std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
-    let s = std::str::from_utf8(&s).unwrap();
+    
+    // find the size of the tree
+    let size = s.splitn(2, '\x00').collect::<Vec<&str>>()[0];
+    let size = size.splitn(2, ' ').collect::<Vec<&str>>()[1];
+
+    // truncate the details before null value and print the content
+    let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
+
+    // parse the tree content
+    let mut i = 0;
+    while i < s.len() {
+        let mode = &s[i..i+6];
+        let name = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[0];
+        let sha = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[1];
+        println!("{} {} {}", mode, sha, name);
+        i += 7 + name.len() + 1 + 20;
+    }
+
 
 //     The format of a tree object file looks like this (after Zlib decompression):
 //     tree <size>\0
@@ -84,15 +101,6 @@ fn ls_tree(tree_sha: &str) {
 //     The <name> is the name of the file or directory.
 //     The <20_byte_sha> is the SHA-1 hash of the object.
 
-    let mut i = 0;
-    while i < s.len() {
-        let mode = &s[i..i+6];
-        let name = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[0];
-        let sha = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[1];
-        println!("{} {} {}", mode, sha, name);
-        i += 7 + name.len() + 1 + 20;
-    }
-    
 }
 
 fn main() {
