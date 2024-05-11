@@ -58,6 +58,19 @@ fn hash_object(file_name: &str) {
     
 }
 
+fn ls_tree(tree_sha: &str) {
+    let path = format!(".git/objects/{}/{}", &tree_sha[..2], &tree_sha[2..]);
+    let content = fs::read(path).unwrap();
+    let decompressed = flate2::read::ZlibDecoder::new(&content[..]);
+    let mut s = String::new();
+    std::io::BufReader::new(decompressed).read_to_string(&mut s).unwrap();
+
+    // truncate the details before null value and print the content
+    let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
+    
+    print!("{}", s);
+}
+
 fn main() {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     // println!("Logs from your program will appear here!");
@@ -72,7 +85,10 @@ fn main() {
     } else if args[1] == "hash-object"{
         // git hash-object -w <file>
         hash_object(&args[3]);
-    } 
+    } else if args[1] == "ls-tree" {
+        // git ls-tree --name-only <tree_sha>
+        ls_tree(&args[3]);
+    }
     else {
         println!("unknown command: {}", args[1])
     }
