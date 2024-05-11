@@ -49,7 +49,7 @@ fn main() {
     } else if args[1] == "hash-object"{
         // git hash-object -w <file>
         
-        println!("{}", hash_object(&args[3]);
+        println!("{}", hash_object(&args[3]));
 
     } 
     else {
