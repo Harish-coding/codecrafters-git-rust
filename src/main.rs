@@ -5,6 +5,8 @@ use std::io::Write;
 use sha1::{Digest, Sha1};
 
 
+
+
 fn init_repo() {
     fs::create_dir(".git").unwrap();
     fs::create_dir(".git/objects").unwrap();
@@ -65,10 +67,11 @@ fn ls_tree(tree_sha: &str) {
     let mut s = String::new();
     std::io::BufReader::new(decompressed).read_to_string(&mut s).unwrap();
 
-    // truncate the details before null value and print the content
-    let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
-    
-    print!("{}", s);
+    // print the name of files and directories
+    for line in s.lines() {
+        let parts = line.split_whitespace().collect::<Vec<&str>>();
+        println!("{}", parts[3]);
+    }
 }
 
 fn main() {
