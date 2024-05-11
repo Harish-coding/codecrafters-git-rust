@@ -64,14 +64,35 @@ fn ls_tree(tree_sha: &str) {
     let path = format!(".git/objects/{}/{}", &tree_sha[..2], &tree_sha[2..]);
     let content = fs::read(path).unwrap();
     let decompressed = flate2::read::ZlibDecoder::new(&content[..]);
-    let mut s = String::new();
-    std::io::BufReader::new(decompressed).read_to_string(&mut s).unwrap();
 
-    // print the name of files and directories
-    for line in s.lines() {
-        let parts = line.split_whitespace().collect::<Vec<&str>>();
-        println!("{}", parts[3]);
+    // use Vec::new()
+    let mut s = Vec::new();
+    std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
+    let s = std::str::from_utf8(&s).unwrap();
+
+//     The format of a tree object file looks like this (after Zlib decompression):
+//     tree <size>\0
+//     <mode> <name>\0<20_byte_sha>
+//     <mode> <name>\0<20_byte_sha>
+//     ...
+//     <mode> <name>\0<20_byte_sha>
+//     For files, the valid values are:
+//     100644 (regular file)
+//     100755 (executable file)
+//     120000 (symbolic link)
+//     For directories, the value is 040000
+//     The <name> is the name of the file or directory.
+//     The <20_byte_sha> is the SHA-1 hash of the object.
+
+    let mut i = 0;
+    while i < s.len() {
+        let mode = &s[i..i+6];
+        let name = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[0];
+        let sha = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[1];
+        println!("{} {} {}", mode, sha, name);
+        i += 7 + name.len() + 1 + 20;
     }
+    
 }
 
 fn main() {
