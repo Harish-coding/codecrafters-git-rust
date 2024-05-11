@@ -17,7 +17,14 @@ fn unzip_content(sha: &str) {
     let decompressed = flate2::read::ZlibDecoder::new(&content[..]);
     let mut s = String::new();
     std::io::BufReader::new(decompressed).read_to_string(&mut s).unwrap();
+
+    // truncate the details before null value and print the content
+    let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
+    // remove the trailing newline
+    let s = s.trim_end();
+    
     println!("{}", s);
+
 }
 
 fn main() {
