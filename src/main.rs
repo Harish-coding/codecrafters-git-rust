@@ -5,8 +5,6 @@ use std::io::Write;
 use sha1::Sha1;
 
 
-
-
 fn init_repo() {
     fs::create_dir(".git").unwrap();
     fs::create_dir(".git/objects").unwrap();
@@ -33,7 +31,7 @@ fn hash_object(file_name: &str) -> String {
     let mut file = fs::File::open(file_name).unwrap();
     let mut content = Vec::new();
     file.read_to_end(&mut content).unwrap();
-    let mut hasher = sha1::Sha1::new();
+    let mut hasher = Sha1::new();
     hasher.update(&content);
     let sha = hasher.digest().to_string();
     let mut compressed = Vec::new();
