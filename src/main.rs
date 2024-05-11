@@ -69,21 +69,19 @@ fn ls_tree(tree_sha: &str) {
     let mut s = Vec::new();
     std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
     
-    // find the size of the tree
-    let size = s.splitn(2, '\x00').collect::<Vec<&str>>()[0];
-    let size = size.splitn(2, ' ').collect::<Vec<&str>>()[1];
+    let null_index = decompressed.iter().position(|&x| x == 0).unwrap();
+    let (header, content) = decompressed.split_at(null_index);
+    let content = content.iter().skip(1).collect::<Vec<_>>();
+    
 
-    // truncate the details before null value and print the content
-    let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
-
-    // parse the tree content
+    // loop through the content
     let mut i = 0;
-    while i < s.len() {
-        let mode = &s[i..i+6];
-        let name = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[0];
-        let sha = &s[i+7..].splitn(2, '\x00').collect::<Vec<&str>>()[1];
-        println!("{} {} {}", mode, sha, name);
-        i += 7 + name.len() + 1 + 20;
+    while i < content.len() {
+        let mode = std::str::from_utf8(&content[i..i+6]).unwrap();
+        let name = std::str::from_utf8(&content[i+7..]).unwrap();
+        let sha = std::str::from_utf8(&content[i+7+name.len()+1..i+7+name.len()+21]).unwrap();
+        println!("{} {} {}", mode, name, sha);
+        i += 7 + name.len() + 21;
     }
 
 
