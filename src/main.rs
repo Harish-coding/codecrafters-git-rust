@@ -20,8 +20,8 @@ fn unzip_content(sha: &str) {
 
     // truncate the details before null value and print the content
     let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
-
-    println!("{}\n", s);
+    s.truncate(len - 1);
+    println!("{}", s);
 }
 
 fn main() {
