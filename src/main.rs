@@ -34,7 +34,7 @@ fn hash_object(file_name: &str) -> String {
 
     let mut hasher = Sha1::new();
     hasher.update(&content);
-    let sha = hasher.digest().to_string();
+    let sha = Sha1::digest(&hasher).to_string();
 
     let mut compressed = Vec::new();
     compressed.extend_from_slice(b"blob ");
