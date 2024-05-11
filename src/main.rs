@@ -3,8 +3,6 @@ use std::fs;
 use std::io::Read;
 use std::io::Write;
 
-mod git_hash;
-
 
 fn init_repo() {
     fs::create_dir(".git").unwrap();
@@ -28,12 +26,24 @@ fn unzip_content(sha: &str) {
 }
 
 fn hash_object(file_name: &str) -> String {
+    // compute the SHA hash of a Git object. For example, if the contents of a file are hello world, the blob object file would look like this (after Zlib decompression): blob 11\0hello world
     let mut file = fs::File::open(file_name).unwrap();
     let mut content = Vec::new();
     file.read_to_end(&mut content).unwrap();
-    let sha = git_hash::hash_object(&content, git_hash::ObjectType::Blob);
+    let mut hasher = sha1::Sha1::new();
+    hasher.update(&content);
+    let sha = hasher.digest().to_string();
+    let mut compressed = Vec::new();
+    compressed.extend_from_slice(b"blob ");
+    compressed.extend_from_slice(content.len().to_string().as_bytes());
+    compressed.push(0);
+    compressed.extend_from_slice(&content);
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+    encoder.write_all(&compressed).unwrap();
+    let compressed = encoder.finish().unwrap();
     let path = format!(".git/objects/{}/{}", &sha[..2], &sha[2..]);
-    fs::write(path, git_hash::compress(&content)).unwrap();
+    fs::create_dir_all(format!(".git/objects/{}", &sha[..2])).unwrap();
+    fs::write(&path, compressed).unwrap();
     sha
 }
 
