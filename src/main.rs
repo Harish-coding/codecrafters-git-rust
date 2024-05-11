@@ -68,7 +68,7 @@ fn ls_tree(tree_sha: &str) {
     std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
     
     // find the first null value and truncate the header
-    let s = std::str::from_utf8(&s).unwrap();
+    let s = std::str::from_utf8(&decompressed).unwrap();
     let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
     let content = s.as_bytes();
     
