@@ -21,8 +21,8 @@ fn unzip_content(sha: &str) {
     // truncate the details before null value and print the content
     let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
     
-    // remove EOF character
-    let s = s.trim_end_matches(char::from(0));
+    // remove \n character from the end of the string
+    let s = s.trim_end_matches('\n');
 
     println!("{}", s);
 
