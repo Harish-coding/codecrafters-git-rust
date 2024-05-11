@@ -53,8 +53,9 @@ fn hash_object(file_name: &str) -> String {
     let compressed = encoder.finish().unwrap();
     file.write_all(&compressed).unwrap();
 
-    // return the hash
-    hash
+    // print the hash
+    println!("{}", hash);
+    
 }
 
 fn main() {
@@ -70,9 +71,7 @@ fn main() {
         unzip_content(&args[3]);
     } else if args[1] == "hash-object"{
         // git hash-object -w <file>
-        
-        println!("{}", hash_object(&args[3]));
-
+        hash_object(&args[3]);
     } 
     else {
         println!("unknown command: {}", args[1])
