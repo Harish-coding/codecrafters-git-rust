@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::io::Read;
 use std::io::Write;
-use sha1::Sha1;
+use sha1::{Digest, Sha1};
 
 
 fn init_repo() {
@@ -31,9 +31,11 @@ fn hash_object(file_name: &str) -> String {
     let mut file = fs::File::open(file_name).unwrap();
     let mut content = Vec::new();
     file.read_to_end(&mut content).unwrap();
+
     let mut hasher = Sha1::new();
     hasher.update(&content);
     let sha = hasher.digest().to_string();
+
     let mut compressed = Vec::new();
     compressed.extend_from_slice(b"blob ");
     compressed.extend_from_slice(content.len().to_string().as_bytes());
