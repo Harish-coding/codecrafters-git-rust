@@ -3,12 +3,6 @@ use std::fs;
 use std::io::Read;
 use std::io::Write;
 use sha1::{Digest, Sha1};
-use flate2::read::ZlibDecoder;
-use flate2::write::ZlibEncoder;
-use flate2::Compression;
-
-
-
 
 
 fn init_repo() {
@@ -73,9 +67,10 @@ fn ls_tree(tree_sha: &str) {
     let mut s = Vec::new();
     std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
     
-    let null_index = decompressed.iter().position(|&x| x == 0).unwrap();
-    let (header, content) = decompressed.split_at(null_index);
-    let content = content.iter().skip(1).collect::<Vec<_>>();
+    // find the first null value and truncate the header
+    let s = std::str::from_utf8(&s).unwrap();
+    let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
+    let content = s.as_bytes();
     
 
     // loop through the content
