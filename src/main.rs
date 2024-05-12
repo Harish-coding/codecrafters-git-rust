@@ -79,11 +79,24 @@ fn ls_tree(tree_sha: &str) {
     // loop through the content
     let mut i = 0;
     while i < content.len() {
+        // extract name where 
+        //        <mode> <name>\0<20_byte_sha>
+        //     <mode> <name>\0<20_byte_sha>
+        //     ...
+        //     <mode> <name>\0<20_byte_sha>
+
+        // extract mode
         let mode = std::str::from_utf8(&content[i..i+6]).unwrap();
-        let name = std::str::from_utf8(&content[i+7..]).unwrap();
-        let sha = std::str::from_utf8(&content[i+7+name.len()+1..i+7+name.len()+21]).unwrap();
-        println!("{} {} {}", mode, name, sha);
-        i += 7 + name.len() + 21;
+        i += 6;
+
+        // extract name
+        let name = std::str::from_utf8(&content[i..]).unwrap();
+        let name = name.splitn(2, |&x| x == 0).collect::<Vec<&[u8]>>()[0];
+        let name = std::str::from_utf8(name).unwrap();
+        i += name.len() + 1;
+
+        // print the name
+        println!("{}", name);
     }
 
 
