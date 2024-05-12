@@ -120,26 +120,46 @@ fn ls_tree(tree_sha: &str) {
 
 
 fn create_tree() {
-    let mut tree = Vec::new();
+    let mut tree_content = Vec::new();
     let entries = fs::read_dir(".").unwrap();
     for entry in entries {
         let entry = entry.unwrap();
-        let file_name = entry.file_name().into_string().unwrap();
-        let metadata = entry.metadata().unwrap();
-        let mut mode = 100644;
-        if metadata.is_dir() {
-            mode = 040000;
-        }
-        let mut header = format!("{} {}\x00", mode, file_name);
-        tree.append(&mut header.as_bytes().to_vec());
-        let mut file = fs::File::open(file_name).unwrap();
+        let path = entry.path();
+        let file_name = path.file_name().unwrap().to_str().unwrap();
+        let file_name = file_name.trim();
+        let mut hasher = Sha1::new();
         let mut content = Vec::new();
-        file.read_to_end(&mut content).unwrap();
-        tree.append(&mut content);
+        let mut header = String::new();
+        if path.is_file() {
+            let mut file = fs::File::open(file_name).unwrap();
+            file.read_to_end(&mut content).unwrap();
+            header = format!("blob {}\x00", content.len());
+        } else if path.is_dir() {
+            // recursively create a tree object
+            create_tree();
+        }
+        header.push_str(std::str::from_utf8(&content).unwrap());
+        hasher.update(header.clone());
+        let result = hasher.finalize();
+        let hash = format!("{:x}", result);
+        let mode = if path.is_file() {
+            "100644"
+        } else if path.is_dir() {
+            "040000"
+        } else {
+            // handle other file types if needed
+            "100644"
+        };
+        tree_content.push((mode, file_name, hash));
+    }
+
+    let mut tree_content_str = String::new();
+    for (mode, name, hash) in tree_content {
+        tree_content_str.push_str(&format!("{} {} {}\0", mode, name, hash));
     }
 
     let mut hasher = Sha1::new();
-    hasher.update(&tree);
+    hasher.update(tree_content_str.clone());
     let result = hasher.finalize();
     let hash = format!("{:x}", result);
 
@@ -147,7 +167,7 @@ fn create_tree() {
     fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
     let mut file = fs::File::create(path).unwrap();
     let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-    encoder.write_all(&tree).unwrap();
+    encoder.write_all(tree_content_str.as_bytes()).unwrap();
     let compressed = encoder.finish().unwrap();
     file.write_all(&compressed).unwrap();
 
