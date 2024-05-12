@@ -152,7 +152,7 @@ fn create_tree(dir: &str) -> String {
             file.read_to_end(&mut content).unwrap();
 
             // update the content with the header
-            let mut header = format!("blob {}\x00", content.len())
+            let mut header = format!("blob {}\x00", content.len());
             header.push_str(String::from_utf8_lossy(&content).to_string().as_str());
 
             // hash the content
