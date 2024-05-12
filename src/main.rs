@@ -130,7 +130,11 @@ fn create_tree(dir: &str) -> String {
     for entry in entries {
         let entry = entry.unwrap();
         let path = entry.path();
-        let file_name = path.file_name().unwrap().to_str().unwrap();
+        let file_name = {
+            let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
+            // Use file_name here
+            file_name
+        };
         let metadata = fs::metadata(&path).unwrap();
 
         // check if the entry is a directory
