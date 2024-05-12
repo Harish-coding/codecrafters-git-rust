@@ -193,7 +193,7 @@ fn create_tree(dir: &str) -> String {
     file.write_all(&compressed).unwrap();
     
     // return the hash as string
-    hash.to_string();           
+    hash         
     
 }
 
