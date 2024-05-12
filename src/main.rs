@@ -152,8 +152,8 @@ fn create_tree(dir: &str) -> String {
             file.read_to_end(&mut content).unwrap();
 
             // update the content with the header
-            let mut header = format!("blob {}\x00", content.len());
-            header.push_str(std::str::from_utf8(&content).unwrap());
+            let mut header = format!("blob {}\x00", content.len())
+            header.push_str(String::from_utf8_lossy(&content).to_string().as_str());
 
             // hash the content
             let mut hasher = Sha1::new();
@@ -164,6 +164,7 @@ fn create_tree(dir: &str) -> String {
 
             // store the entry
             entries_vec.push((100644, file_name, hash));
+
         }
     }
 
@@ -173,7 +174,7 @@ fn create_tree(dir: &str) -> String {
     // create the tree content
     let mut tree_content = Vec::new();
     for entry in entries_vec {
-        tree_content.push(format!("{:06o} {} {}\0", entry.0, entry.1, entry.2));
+        tree_content.push(format!("{} {}\0{}", entry.0, entry.1, entry.2));
     }
     
     // join the tree content
