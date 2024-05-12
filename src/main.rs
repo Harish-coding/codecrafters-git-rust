@@ -93,6 +93,10 @@ fn ls_tree(tree_sha: &str) {
         let name = String::from_utf8_lossy(&content[i..i+name_end]).to_string();
         i += name_end + 21;
 
+        //remove any trailing whitespace
+        let name = name.trim();
+    
+
         // print the name
         println!("{}", name);
     }
