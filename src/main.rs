@@ -181,7 +181,7 @@ fn create_tree(dir: &str) -> String {
     let tree_content = tree_content.join("");
     
     // create the tree object
-    let mut tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
+    let tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
     let mut hasher = Sha1::new();
     hasher.update(tree_content.clone());
     let result = hasher.finalize();
