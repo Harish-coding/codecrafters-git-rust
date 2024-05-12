@@ -130,7 +130,7 @@ fn create_tree() {
         if metadata.is_dir() {
             mode = 040000;
         }
-        let mut header = format!("{:o} {}\x00", mode, file_name);
+        let mut header = format!("{} {}\x00", mode, file_name);
         tree.append(&mut header.as_bytes().to_vec());
         let mut file = fs::File::open(file_name).unwrap();
         let mut content = Vec::new();
