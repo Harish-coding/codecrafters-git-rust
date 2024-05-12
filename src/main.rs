@@ -154,7 +154,7 @@ fn create_tree(dir: &str) -> String {
             // update the content with the header
             let mut header = format!("blob {}\x00", content.len());
             // header.push_str(std::str::from_utf8(&content).unwrap());
-            header.push_str(String::from_utf8_lossy(&content[i..i+name_end]).to_string().as_str());
+            header.push_str(String::from_utf8_lossy(&content).to_string().as_str());
 
             // hash the content
             let mut hasher = Sha1::new();
