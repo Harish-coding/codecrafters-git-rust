@@ -89,11 +89,9 @@ fn ls_tree(tree_sha: &str) {
         let mode = std::str::from_utf8(&content[i..i+6]).unwrap();
         i += 6;
 
-        // extract name
-        let name = std::str::from_utf8(&content[i..]).unwrap();
-        let name = name.splitn(2, |&x: &_| *x == 0).collect::<Vec<&[u8]>>()[0];
-        let name = std::str::from_utf8(name).unwrap();
-        i += name.len() + 1;
+        // extract name by finding null value index
+        let name_end = content[i..].iter().position(|&x| x == 0).unwrap();
+        let name = std::str::from_utf8(&content[i..i+name_end]).unwrap();
 
         // print the name
         println!("{}", name);
