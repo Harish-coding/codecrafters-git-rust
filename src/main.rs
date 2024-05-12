@@ -139,6 +139,10 @@ fn create_tree(dir: &str) -> String {
 
         // check if the entry is a directory
         if metadata.is_dir() {
+            // ignore the .git directory
+            if file_name == ".git" {
+                continue;
+            }
             
             // push the entry to the vector
             entries_vec.push((40000, file_name, create_tree(&path.to_str().unwrap())));
@@ -199,7 +203,6 @@ fn create_tree(dir: &str) -> String {
     
     // return the hash as string
     hash         
-    
 }
 
 
