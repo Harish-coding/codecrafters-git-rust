@@ -131,9 +131,7 @@ fn create_tree() {
         let mut content = Vec::new();
         let mut header = String::new();
         if path.is_file() {
-            let mut file = fs::File::open(file_name).unwrap();
-            file.read_to_end(&mut content).unwrap();
-            header = format!("blob {}\x00", content.len());
+            hash_object(file_name);
         } else if path.is_dir() {
             // recursively create a tree object
             create_tree();
@@ -151,7 +149,6 @@ fn create_tree() {
             "100644"
         };
         tree_content.push((mode, file_name, hash));
-    }
 
     let mut tree_content_str = String::new();
     for (mode, name, hash) in tree_content {
