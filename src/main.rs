@@ -63,7 +63,7 @@ fn ls_tree(tree_sha: &str) {
     let content = fs::read(path).unwrap();
     let decompressed = flate2::read::ZlibDecoder::new(&content[..]);
 
-    use Vec::new()
+    // use Vec::new();
     let mut s = Vec::new();
     std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
     
