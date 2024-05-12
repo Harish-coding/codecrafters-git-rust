@@ -85,8 +85,7 @@ fn ls_tree(tree_sha: &str) {
         //     ...
         //     <mode> <name>\0<20_byte_sha>
 
-        // extract mode
-        let mode = std::str::from_utf8(&content[i..i+6]).unwrap();
+        // skip mode and whitespace
         i += 6;
 
         // extract name by finding null value index
