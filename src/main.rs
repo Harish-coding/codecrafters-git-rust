@@ -72,9 +72,8 @@ fn ls_tree(tree_sha: &str) {
     // let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
     // let content = s.as_bytes();
     
-    // split at the first null value
-    let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
-    let content = s.as_bytes();
+    // split at first null value
+    let content = s.splitn(2, |&x| x == 0).collect::<Vec<&[u8]>>()[1];
 
 
     // loop through the content
