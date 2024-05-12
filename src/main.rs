@@ -142,9 +142,7 @@ fn create_tree(dir: &str) -> String {
             // get store (mode, name, sha) in the vector. sha is hash of blob
 
             // load the file content
-            let mut file = fs::File
-                .open(&path)
-                .unwrap();
+            let mut file = fs::File::open(&path).unwrap();
 
             let mut content = Vec::new();
             file.read_to_end(&mut content).unwrap();
@@ -193,7 +191,7 @@ fn create_tree(dir: &str) -> String {
             file.write_all(&compressed).unwrap();
     
         // return the hash as string
-        hash            
+        hash.to_string();           
     } 
 
     
