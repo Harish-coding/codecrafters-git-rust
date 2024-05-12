@@ -198,17 +198,8 @@ fn create_tree(dir: &str) -> String {
 
     
 }
-;
-
-    }
 
 
-    
-    }
-
-
-    
-}
 
 
 fn main() {
@@ -253,7 +244,7 @@ fn main() {
 
     } else if args[1] == "write-tree" {
         // git write-tree
-        
+
         // print the hash
         println!("{}", create_tree("."));
         } else {
