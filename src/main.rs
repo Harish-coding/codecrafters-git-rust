@@ -62,16 +62,22 @@ fn ls_tree(tree_sha: &str) {
     let path = format!(".git/objects/{}/{}", &tree_sha[..2], &tree_sha[2..]);
     let content = fs::read(path).unwrap();
     let decompressed = flate2::read::ZlibDecoder::new(&content[..]);
+    let mut s = String::new();
+    std::io::BufReader::new(decompressed).read_to_string(&mut s).unwrap();
 
     // use Vec::new()
-    let mut s = Vec::new();
-    std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
+    // let mut s = Vec::new();
+    // std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
     
-    // find the first null value and truncate the header
-    let s = std::str::from_utf8(&content).unwrap();
+    // // find the first null value and truncate the header
+    // let s = std::str::from_utf8(&content).unwrap();
+    // let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
+    // let content = s.as_bytes();
+    
+    // split at the first null value
     let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
     let content = s.as_bytes();
-    
+
 
     // loop through the content
     let mut i = 0;
