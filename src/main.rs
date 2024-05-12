@@ -139,9 +139,9 @@ fn create_tree(dir: &str) -> String {
             if file_name == ".git" {
                 continue;
             }
-            
             // push the entry to the vector
             entries_vec.push((40000, file_name, create_tree(&path.to_str().unwrap())));
+
         } else {
             // get store (mode, name, sha) in the vector. sha is hash of blob
 
@@ -159,8 +159,7 @@ fn create_tree(dir: &str) -> String {
             let mut hasher = Sha1::new();
             hasher.update(header.clone());
             let result = hasher.finalize();
-            // hash in hex format
-            let hash = format!("{:x}", result);
+            let hash = result.to_vec();
 
             // store the entry
             entries_vec.push((100644, file_name, hash));
@@ -177,7 +176,7 @@ fn create_tree(dir: &str) -> String {
         tree_content.push(format!("{} {}\0{}", entry.0, entry.1, entry.2));
     }
     
-    // join the tree content
+    // join the tree content 
     let tree_content = tree_content.join("");
     
     // create the tree object
