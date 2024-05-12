@@ -91,6 +91,7 @@ fn ls_tree(tree_sha: &str) {
         // extract name by finding null value index
         let name_end = content[i..].iter().position(|&x| x == 0).unwrap();
         let name = String::from_utf8_lossy(&content[i..i+name_end]).to_string();
+        i += name_end + 21;
 
         // print the name
         println!("{}", name);
