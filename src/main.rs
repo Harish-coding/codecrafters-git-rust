@@ -118,11 +118,15 @@ fn ls_tree(tree_sha: &str) {
 
 }
 
+// take directory as argument
+fn create_tree(dir: &str) {
 
-fn create_tree() {
     let mut tree_content = Vec::new();
-    let entries = fs::read_dir(".").unwrap();
+    let entries = fs::read_dir(dir).unwrap();
+
     for entry in entries {
+
+        
         let entry = entry.unwrap();
         let path = entry.path();
         let file_name = path.file_name().unwrap().to_str().unwrap();
@@ -130,12 +134,29 @@ fn create_tree() {
         let mut hasher = Sha1::new();
         let mut content = Vec::new();
         let mut header = String::new();
+
+
         if path.is_file() {
-            hash_object(file_name);
+            // load the file content
+            let mut file = fs::File::open(&path).unwrap();
+            file.read_to_end(&mut content).unwrap();
+            header.push_str(format!("100644 {}{}\0", file_name, content.len()).as_str());
+
+            // update the content with the header
+            let mut header = format!("blob {}\x00", content.len());
+            header.push_str(std::str::from_utf8(&content).unwrap());
+
+            // hash the content
+            hasher.update(header.clone());
+            let result = hasher.finalize();
+            let hash = format!("{:x}", result);
+            tree_content.push(("100644", file_name, hash));
+            
         } else if path.is_dir() {
             // recursively create a tree object
-            create_tree();
-        }
+            create_tree(&path.to_string_lossy());
+        } 
+
         header.push_str(std::str::from_utf8(&content).unwrap());
         hasher.update(header.clone());
         let result = hasher.finalize();
@@ -148,7 +169,10 @@ fn create_tree() {
             // handle other file types if needed
             "100644"
         };
+
         tree_content.push((mode, file_name, hash));
+
+    }
 
     let mut tree_content_str = String::new();
     for (mode, name, hash) in tree_content {
@@ -214,9 +238,8 @@ fn main() {
 
     } else if args[1] == "write-tree" {
         // git write-tree
-
-        create_tree();
-    }else {
+        create_tree(".");
+        } else {
         println!("unknown command: {}", args[1])
     }
 }
