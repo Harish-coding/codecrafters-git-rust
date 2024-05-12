@@ -67,10 +67,6 @@ fn ls_tree(tree_sha: &str) {
     let mut s = Vec::new();
     std::io::BufReader::new(decompressed).read_to_end(&mut s).unwrap();
     
-    // // find the first null value and truncate the header
-    // let s = std::str::from_utf8(&content).unwrap();
-    // let s = s.splitn(2, '\x00').collect::<Vec<&str>>()[1];
-    // let content = s.as_bytes();
     
     // split at first null value
     let content = s.splitn(2, |&x| x == 0).collect::<Vec<&[u8]>>()[1];
@@ -165,7 +161,7 @@ fn create_tree(dir: &str) -> String {
             hasher.update(header.clone());
             let result = hasher.finalize();
             // hash in hex format
-            let hash = format!("{:x}", result);
+            let hash = format!("{}", result);
 
             // store the entry
             entries_vec.push((100644, file_name, hash));
