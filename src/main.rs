@@ -119,80 +119,75 @@ fn ls_tree(tree_sha: &str) {
 }
 
 // take directory as argument
-fn create_tree(dir: &str) {
-
-    let mut tree_content = Vec::new();
-    let entries = fs::read_dir(dir).unwrap();
-
-    for entry in entries {
-
-        
-        let entry = entry.unwrap();
-        let path = entry.path();
-        let file_name = path.file_name().unwrap().to_str().unwrap();
-        let file_name = file_name.trim();
-        let mut hasher = Sha1::new();
-        let mut content = Vec::new();
-        let mut header = String::new();
 
 
-        if path.is_file() {
-            // load the file content
-            let mut file = fs::File::open(&path).unwrap();
-            file.read_to_end(&mut content).unwrap();
-            header.push_str(format!("100644 {}{}\0", file_name, content.len()).as_str());
+    fn create_tree(dir: &str) {
+        let mut tree_content = Vec::new();
+        let entries = fs::read_dir(dir)?;
 
-            // update the content with the header
-            let mut header = format!("blob {}\x00", content.len());
+        for entry in entries {
+            let entry = entry?;
+            let path = entry.path();
+            let file_name = path.file_name().ok_or(anyhow!("Invalid file name"))?.to_str().ok_or(anyhow!("Invalid file name"))?.to_string();
+            let file_name = file_name.trim();
+            let mut hasher = Sha1::new();
+            let mut content = Vec::new();
+            let mut header = String::new();
+
+            if path.is_file() {
+                let mut input_file = fs::File::open(&path)?;
+                let size = input_file.metadata()?.len();
+                let mut buf = BytesMut::new();
+                buf.write_str("blob ")?;
+                buf.write_str(&size.to_string())?;
+                buf.put_u8(0);
+                let start_content = buf.len();
+                buf.resize(start_content + size as usize, 0);
+                input_file.read_exact(&mut buf[start_content..])?;
+                let blob_sha: Sha1Hash = Sha1Hash::hash(&buf);
+                if should_write {
+                    write_object(&buf, Some(blob_sha.clone()))?;
+                }
+                tree_content.push(("100644", file_name, blob_sha.to_string()));
+            } else if path.is_dir() {
+                let sha = write_tree(&path)?;
+                tree_content.push(("040000", file_name, sha.to_string()));
+            }
+
             header.push_str(std::str::from_utf8(&content).unwrap());
-
-            // hash the content
             hasher.update(header.clone());
             let result = hasher.finalize();
             let hash = format!("{:x}", result);
-            tree_content.push(("100644", file_name, hash));
-            
-        } else if path.is_dir() {
-            // recursively create a tree object
-            create_tree(&path.to_string_lossy());
-        } 
+            let mode = if path.is_file() {
+                "100644"
+            } else if path.is_dir() {
+                "040000"
+            } else {
+                "100644"
+            };
 
-        header.push_str(std::str::from_utf8(&content).unwrap());
-        hasher.update(header.clone());
-        let result = hasher.finalize();
-        let hash = format!("{:x}", result);
-        let mode = if path.is_file() {
-            "100644"
-        } else if path.is_dir() {
-            "040000"
-        } else {
-            // handle other file types if needed
-            "100644"
-        };
+            tree_content.push((mode, file_name, hash));
+        }
 
-        tree_content.push((mode, file_name, hash));
+        tree_content.sort_by(|a, b| a.1.cmp(&b.1));
 
-    }
+        let mut buf = BytesMut::new();
+        for (mode, name, sha) in tree_content {
+            buf.write_fmt(format_args!("{:o} {}", mode, name))?;
+            buf.put_u8(0);
+            buf.put_slice(sha.as_bytes());
+        }
+        let buf = buf.freeze();
+        let mut object_buf = BytesMut::with_capacity(buf.len() + 32);
+        object_buf.write_fmt(format_args!("tree {}", buf.len()))?;
+        object_buf.put_u8(0);
+        object_buf.put_slice(&buf);
+        let sha1 = write_object(&object_buf, None)?;
 
-    let mut tree_content_str = String::new();
-    for (mode, name, hash) in tree_content {
-        tree_content_str.push_str(&format!("{} {} {}\0", mode, name, hash));
-    }
+        // print the hash
+        println!("{}", sha1);
 
-    let mut hasher = Sha1::new();
-    hasher.update(tree_content_str.clone());
-    let result = hasher.finalize();
-    let hash = format!("{:x}", result);
-
-    let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
-    fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
-    let mut file = fs::File::create(path).unwrap();
-    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-    encoder.write_all(tree_content_str.as_bytes()).unwrap();
-    let compressed = encoder.finish().unwrap();
-    file.write_all(&compressed).unwrap();
-
-    println!("{}", hash);
+    
 }
 
 
