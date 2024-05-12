@@ -179,7 +179,7 @@ fn create_tree(dir: &str) -> String {
     // create the tree content
     let mut tree_content = Vec::new();
     for entry in entries_vec {
-        tree_content.push(format!("{:06o} {}\0{}", entry.0, entry.1, entry.2));
+        tree_content.push(format!("{} {}\0{}", entry.0, entry.1, entry.2));
     }
     
     // join the tree content
