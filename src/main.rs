@@ -118,6 +118,43 @@ fn ls_tree(tree_sha: &str) {
 
 }
 
+
+fn create_tree() {
+    let mut tree = Vec::new();
+    let entries = fs::read_dir(".").unwrap();
+    for entry in entries {
+        let entry = entry.unwrap();
+        let file_name = entry.file_name().into_string().unwrap();
+        let metadata = entry.metadata().unwrap();
+        let mut mode = 100644;
+        if metadata.is_dir() {
+            mode = 040000;
+        }
+        let mut header = format!("{:o} {}\x00", mode, file_name);
+        tree.append(&mut header.as_bytes().to_vec());
+        let mut file = fs::File::open(file_name).unwrap();
+        let mut content = Vec::new();
+        file.read_to_end(&mut content).unwrap();
+        tree.append(&mut content);
+    }
+
+    let mut hasher = Sha1::new();
+    hasher.update(&tree);
+    let result = hasher.finalize();
+    let hash = format!("{:x}", result);
+
+    let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
+    fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
+    let mut file = fs::File::create(path).unwrap();
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+    encoder.write_all(&tree).unwrap();
+    let compressed = encoder.finish().unwrap();
+    file.write_all(&compressed).unwrap();
+
+    println!("{}", hash);
+}
+
+
 fn main() {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     // println!("Logs from your program will appear here!");
@@ -125,18 +162,44 @@ fn main() {
     // Uncomment this block to pass the first stage
     let args: Vec<String> = env::args().collect();
     if args[1] == "init" {
+        // git init
         init_repo();
     } else if args[1] == "cat-file" {
         // git cat-file -p <blob_sha>
+
+        // check if the args[2] is -p
+        if args[2] != "-p" {
+            println!("unknown option: {}", args[2]);
+            return;
+        }
+
         unzip_content(&args[3]);
     } else if args[1] == "hash-object"{
         // git hash-object -w <file>
+
+        // check if the args[2] is -w
+        if args[2] != "-w" {
+            println!("unknown option: {}", args[2]);
+            return;
+        }
+
         hash_object(&args[3]);
     } else if args[1] == "ls-tree" {
         // git ls-tree --name-only <tree_sha>
+
+        // check if the args[2] is --name-only
+        if args[2] != "--name-only" {
+            println!("unknown option: {}", args[2]);
+            return;
+        }
+
         ls_tree(&args[3]);
-    }
-    else {
+
+    } else if args[1] == "write-tree" {
+        // git write-tree
+
+        create_tree();
+    }else {
         println!("unknown command: {}", args[1])
     }
 }
