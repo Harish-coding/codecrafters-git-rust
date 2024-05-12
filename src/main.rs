@@ -162,38 +162,38 @@ fn create_tree(dir: &str) -> String {
             entries_vec.push((100644, file_name, hash));
 
         }
+    }
 
-            entries_vec.sort_by(|a, b| a.1.cmp(&b.1));
+    // sort the entries
+    entries_vec.sort_by(|a, b| a.1.cmp(&b.1));
     
-        // create the tree content
-            let mut tree_content = Vec::new();
-            for entry in entries_vec {
-                tree_content.push(format!("{:06o} {}\0{}", entry.0, entry.1, entry.2));
-            }
+    // create the tree content
+    let mut tree_content = Vec::new();
+    for entry in entries_vec {
+        tree_content.push(format!("{:06o} {}\0{}", entry.0, entry.1, entry.2));
+    }
     
-        // join the tree content
-            let tree_content = tree_content.join("");
+    // join the tree content
+    let tree_content = tree_content.join("");
     
-        // create the tree object
-            let mut tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
-            let mut hasher = Sha1::new();
-            hasher.update(tree_content.clone());
-            let result = hasher.finalize();
-            let hash = format!("{:x}", result);
+    // create the tree object
+    let mut tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
+    let mut hasher = Sha1::new();
+    hasher.update(tree_content.clone());
+    let result = hasher.finalize();
+    let hash = format!("{:x}", result);
     
-        // create the object file
-            let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
-            fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
-            let mut file = fs::File::create(path).unwrap();
-            let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-            encoder.write_all(tree_content.as_bytes()).unwrap();
-            let compressed = encoder.finish().unwrap();
-            file.write_all(&compressed).unwrap();
+    // create the object file
+    let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
+    fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
+    let mut file = fs::File::create(path).unwrap();
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+    encoder.write_all(tree_content.as_bytes()).unwrap();
+    let compressed = encoder.finish().unwrap();
+    file.write_all(&compressed).unwrap();
     
-        // return the hash as string
-        hash.to_string();           
-    } 
-
+    // return the hash as string
+    hash.to_string();           
     
 }
 
