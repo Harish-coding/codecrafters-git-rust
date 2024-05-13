@@ -231,7 +231,7 @@ fn create_tree(dir: &str) -> String {
 
 
 // take tree sha, commit message, and optional parent commit sha and return the commit sha
-fn create_commit(tree_sha: &str, message: &str, parent_commit_sha: Option<&str>) -> String {
+fn create_commit(tree_sha: &str, message: &str, parent_commit_sha: Option<&str>) {
     // create the commit content
     let mut commit_content = Vec::new();
     // add the tree sha
@@ -263,8 +263,8 @@ fn create_commit(tree_sha: &str, message: &str, parent_commit_sha: Option<&str>)
     let compressed = encoder.finish().unwrap();
     file.write_all(&compressed).unwrap();
 
-    // return the hash as string
-    hash
+    // print the hash
+    println!("{}", hash);
 }
 
 
@@ -325,6 +325,9 @@ fn main() {
             None
         };
 
+        // convert the parent_commit_sha to Option<&str>
+        let parent_commit_sha = parent_commit_sha.map(|x| x.as_str());
+
         // check if the args[4] is -m
         let message = if args[3] == "-m" {
             &args[4]
@@ -332,8 +335,8 @@ fn main() {
             &args[6]
         };
 
-        // print the hash
-        println!("{}", create_commit(&args[2], message, parent_commit_sha));
+        // create the commit
+        create_commit(&args[2], message, parent_commit_sha);
         
     } else {
         println!("unknown command: {}", args[1])
