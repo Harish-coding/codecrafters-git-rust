@@ -198,8 +198,12 @@ fn create_tree(dir: &str) -> String {
         
     }
 
-    // format the tree content with header and size
-    let mut tree_content = format!("tree {}\x00", tree_content.len()).into_bytes() + tree_content;
+    // format the tree content with header and size and add the content such that 2 Vec<u8> are concatenated
+    let mut tree_content_bytes = format!("tree {}\x00", tree_content.len()).into_bytes();
+    tree_content_bytes.extend_from_slice(&tree_content);
+    let tree_content = tree_content_bytes;
+
+
 
     // hash the content
     let mut hasher = Sha1::new();
