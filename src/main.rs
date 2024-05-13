@@ -115,7 +115,7 @@ fn ls_tree(tree_sha: &str) {
 }
 
 // take directory as argument and return sha of the tree
-fn create_tree(dir: &str) -> String {
+fn create_tree(dir: &str) -> Vec<u8> {
     // get the list of files in the directory
     let entries = fs::read_dir(dir).unwrap();
 
