@@ -241,12 +241,17 @@ fn create_commit(tree_sha: &str, message: &str, parent_commit_sha: Option<&str>)
         commit_content.extend(format!("parent {}\n", parent_commit_sha).as_bytes());
     }
     // add the author
-    commit_content.extend("author <author> <email> <timestamp>\n".as_bytes());
+    commit_content.extend("author John Doe <johndoe@author.com> 0 +0000\n".as_bytes());
     // add the committer
-    commit_content.extend("committer <committer> <email> <timestamp>\n".as_bytes());
+    commit_content.extend("committer John Doe <johndoe@comitter.com> 0 +0000\n".as_bytes());
     // add the message
     commit_content.extend(format!("\n{}\n", message).as_bytes());
 
+    // format the commit content with header and size and add the content such that 2 Vec<u8> are concatenated
+    let mut commit_content_bytes = format!("commit {}\x00", commit_content.len()).into_bytes();
+    commit_content_bytes.extend_from_slice(&commit_content);
+    let commit_content = commit_content_bytes;
+    
     // hash the content
     let mut hasher = Sha1::new();
     hasher.update(commit_content.clone());
