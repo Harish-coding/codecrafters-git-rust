@@ -193,7 +193,9 @@ fn create_tree(dir: &str) -> String {
 
         // push the entry to the tree content as bytes
         tree_content.push(format!("{:o} {}\0", entry.0, entry.1).as_bytes());
-        tree_content.push(hash);
+
+        // push the hash to the tree content as bytes 
+        tree_content.push(hash.as_slice());
         
     }
     
