@@ -160,7 +160,16 @@ fn create_tree(dir: &str) -> String {
             hasher.update(header.clone());
             let result = hasher.finalize();
             // hash in hex format
-            let hash = format!("{:#?}", result);
+            let hash = format!("{:x}", result);
+
+            // create the object file
+            let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
+            fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
+            let mut file = fs::File::create(path).unwrap();
+            let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+            encoder.write_all(header.as_bytes()).unwrap();
+            let compressed = encoder.finish().unwrap();
+            file.write_all(&compressed).unwrap();
 
             // store the entry
             entries_vec.push((100644, file_name, hash));
