@@ -198,8 +198,6 @@ fn create_tree(dir: &str) -> String {
         
     }
     
-    // flatten the tree content
-    let tree_content = String::from_utf8(tree_content).unwrap();
 
     // hash the content
     let mut hasher = Sha1::new();
