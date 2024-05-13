@@ -199,7 +199,7 @@ fn create_tree(dir: &str) -> String {
     }
 
     // format the tree content with header and size
-    let mut tree_content = format!("tree {}\x00", tree_content.len()).into_bytes() + &tree_content;
+    let mut tree_content = format!("tree {}\x00", tree_content.len()).into_bytes() + tree_content;
 
     // hash the content
     let mut hasher = Sha1::new();
