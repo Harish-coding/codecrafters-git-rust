@@ -175,7 +175,7 @@ fn create_tree(dir: &str) -> String {
             file.write_all(&compressed).unwrap();
 
             // store the entry
-            entries_vec.push((100644, file_name, result.to_vec());
+            entries_vec.push((100644, file_name, result.to_vec()));
 
         }
     }
