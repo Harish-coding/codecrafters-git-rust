@@ -160,7 +160,7 @@ fn create_tree(dir: &str) -> String {
             hasher.update(header.clone());
             let result = hasher.finalize();
             // hash in hex format
-            let hash = format!("{:?}", result);
+            let hash = format!("{:#?}", result);
 
             // store the entry
             entries_vec.push((100644, file_name, hash));
