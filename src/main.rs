@@ -197,14 +197,20 @@ fn create_tree(dir: &str) -> String {
         tree_content.extend(hex::decode(entry.2).unwrap());
         
     }
-    
+
+    // format the tree content with header and size
+    let mut tree_content = format!("tree {}\x00", tree_content.len()).into_bytes() + &tree_content;
 
     // hash the content
     let mut hasher = Sha1::new();
     hasher.update(tree_content.clone());
     let result = hasher.finalize();
+
+
     // hash in hex format
     let hash = format!("{:x}", result);
+
+
     
     // create the object file
     let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
@@ -214,7 +220,7 @@ fn create_tree(dir: &str) -> String {
     encoder.write_all(&tree_content).unwrap();
     let compressed = encoder.finish().unwrap();
     file.write_all(&compressed).unwrap();
-    
+
     // return the hash as string
     hash         
     
