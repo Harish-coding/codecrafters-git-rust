@@ -190,12 +190,13 @@ fn create_tree(dir: &str) -> String {
         let mut hash = [0; 20];
         hex::decode_to_slice(entry.2, &mut hash).unwrap();
         let hash = hash.to_vec();
+        let hash_slice = hash.as_slice();
 
         // push the entry to the tree content as bytes
         tree_content.push(format!("{:o} {}\0", entry.0, entry.1).as_bytes());
 
         // push the hash to the tree content as bytes 
-        tree_content.push(hash.as_slice());
+        tree_content.push(hash_slice);
         
     }
     
