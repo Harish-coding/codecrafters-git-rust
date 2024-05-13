@@ -180,39 +180,9 @@ fn create_tree(dir: &str) -> String {
         }
     }
 
-    entries_vec.sort_unstable_by(|a, b| {
-        // git has very specific rules for how to compare names
-        // https://github.com/git/git/blob/e09f1254c54329773904fe25d7c545a1fb4fa920/tree.c#L99
-        let afn = &a.1;
-        let afn = afn.as_encoded_bytes();
-        let bfn = &b.1;
-        let bfn = bfn.as_encoded_bytes();
-        let common_len = std::cmp::min(afn.len(), bfn.len());
-        match afn[..common_len].cmp(&bfn[..common_len]) {
-            Ordering::Equal => {}
-            o => return o,
-        }
-        if afn.len() == bfn.len() {
-            return Ordering::Equal;
-        }
-        let c1 = if let Some(c) = afn.get(common_len).copied() {
-            Some(c)
-        } else if a.2.is_dir() {
-            Some(b'/')
-        } else {
-            None
-        };
-        let c2 = if let Some(c) = bfn.get(common_len).copied() {
-            Some(c)
-        } else if b.2.is_dir() {
-            Some(b'/')
-        } else {
-            None
-        };
-        c1.cmp(&c2)
-    });
+    
     // sort the entries
-    // entries_vec.sort_by(|a, b| a.1.cmp(&b.1));
+    entries_vec.sort_by(|a, b| a.1.cmp(&b.1));
     
     // create the tree content
     let mut tree_content = Vec::new();
