@@ -204,6 +204,9 @@ fn create_tree(dir: &str) -> String {
 
     // create the tree object
     let mut tree_content = tree_content.concat();
+    // convert the tree content to string
+    let tree_content = String::from_utf8(tree_content).unwrap();
+    // add the header
     let tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
     let mut hasher = Sha1::new();
     hasher.update(tree_content.clone());
