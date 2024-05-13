@@ -230,6 +230,29 @@ fn create_tree(dir: &str) -> String {
 }
 
 
+fn commit_tree(tree_sha: &str, commit_sha: &str, message: &str) {
+    // create the commit content
+    let commit_content = format!("tree {}\nparent {}\nauthor {}\ncommitter {}\n\n{}\n", tree_sha, commit_sha, "author", "committer", message);
+
+    // hash the content
+    let mut hasher = Sha1::new();
+    hasher.update(commit_content.clone());
+    let result = hasher.finalize();
+    // hash in hex format
+    let hash = format!("{:x}", result);
+
+    // create the object file
+    let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
+    fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
+    let mut file = fs::File::create(path).unwrap();
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+    encoder.write_all(commit_content.as_bytes()).unwrap();
+    let compressed = encoder.finish().unwrap();
+    file.write_all(&compressed).unwrap();
+
+    // print the hash
+    println!("{}", hash);
+}
 
 
 fn main() {
@@ -278,9 +301,10 @@ fn main() {
         // print the hash
         println!("{}", create_tree("."));
 
-        
+    } else if args[1] == "commit-tree" {
+        // git commit-tree <tree_sha> -p <commit_sha> -m <message> 
 
-        } else {
+    } else {
         println!("unknown command: {}", args[1])
     }
 }
