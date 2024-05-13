@@ -180,16 +180,17 @@ fn create_tree(dir: &str) -> String {
         }
     }
 
-    
+
     // sort the entries
     entries_vec.sort_by(|a, b| a.1.cmp(&b.1));
     
     // create the tree content
     let mut tree_content = Vec::new();
+
     for entry in entries_vec {
         
         // add the mode
-        tree_content.extend(format!("{:o} ", entry.0).as_bytes());
+        tree_content.extend(format!("{} ", entry.0).as_bytes());
         // add the name
         tree_content.extend(entry.1.as_bytes());
         // add the null value
