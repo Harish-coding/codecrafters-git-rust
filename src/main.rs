@@ -115,7 +115,7 @@ fn ls_tree(tree_sha: &str) {
 }
 
 // take directory as argument and return sha of the tree
-fn create_tree(dir: &str) -> Vec<u8> {
+fn create_tree(dir: &str) -> String {
     // get the list of files in the directory
     let entries = fs::read_dir(dir).unwrap();
 
@@ -175,7 +175,7 @@ fn create_tree(dir: &str) -> Vec<u8> {
             file.write_all(&compressed).unwrap();
 
             // store the entry
-            entries_vec.push((100644, file_name, result.to_vec()));
+            entries_vec.push((100644, file_name, hash));
 
         }
     }
@@ -186,7 +186,15 @@ fn create_tree(dir: &str) -> Vec<u8> {
     // create the tree content
     let mut tree_content = Vec::new();
     for entry in entries_vec {
-        tree_content.push(format!("{} {}\0{}", entry.0, entry.1, entry.2));
+        // convert the entry.2 to digest object
+        let mut hash = [0; 20];
+        hex::decode_to_slice(entry.2, &mut hash).unwrap();
+        let hash = hash.to_vec();
+
+        // push the entry to the tree content as bytes
+        tree_content.push(format!("{:o} {}\0", entry.0, entry.1).as_bytes().to_vec());
+        tree_content.push(hash);
+        
     }
     
     // join the tree content 
@@ -209,8 +217,8 @@ fn create_tree(dir: &str) -> Vec<u8> {
     file.write_all(&compressed).unwrap();
     
     // return the hash as string
-    // hash         
-    result.to_vec()
+    hash         
+    
 }
 
 
@@ -260,7 +268,9 @@ fn main() {
         // git write-tree
 
         // print the hash
-        println!("{}", format!("{:x}", create_tree(".")));
+        println!("{}", create_tree("."));
+
+        
 
         } else {
         println!("unknown command: {}", args[1])
