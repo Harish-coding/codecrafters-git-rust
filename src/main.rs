@@ -162,6 +162,9 @@ fn create_tree(dir: &str) -> String {
             // hash in hex format
             let hash = format!("{:x}", result);
 
+            // hash should not be in hex format
+
+
             // create the object file
             let path = format!(".git/objects/{}/{}", &hash[..2], &hash[2..]);
             fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
@@ -172,7 +175,7 @@ fn create_tree(dir: &str) -> String {
             file.write_all(&compressed).unwrap();
 
             // store the entry
-            entries_vec.push((100644, file_name, hash));
+            entries_vec.push((100644, file_name, result.to_vec());
 
         }
     }
@@ -206,7 +209,8 @@ fn create_tree(dir: &str) -> String {
     file.write_all(&compressed).unwrap();
     
     // return the hash as string
-    hash         
+    // hash         
+    result.to_vec()
 }
 
 
@@ -256,7 +260,8 @@ fn main() {
         // git write-tree
 
         // print the hash
-        println!("{}", create_tree("."));
+        println!("{}", format!("{:x}", create_tree(".")));
+
         } else {
         println!("unknown command: {}", args[1])
     }
