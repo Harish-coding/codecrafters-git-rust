@@ -186,32 +186,26 @@ fn create_tree(dir: &str) -> String {
     // create the tree content
     let mut tree_content = Vec::new();
     for entry in entries_vec {
-        // convert the entry.2 to digest object
-        let mut hash = [0; 20];
-        hex::decode_to_slice(entry.2, &mut hash).unwrap();
-        let hash = hash.to_vec();
-        let hash_slice = hash.as_slice();
-
-        // push the entry to the tree content as bytes
-        tree_content.push(format!("{:o} {}\0", entry.0, entry.1).as_bytes());
-
-        // push the hash to the tree content as bytes 
-        tree_content.push(hash_slice);
+        
+        // add the mode
+        tree_content.extend(format!("{:o} ", entry.0).as_bytes());
+        // add the name
+        tree_content.extend(entry.1.as_bytes());
+        // add the null value
+        tree_content.push(0);
+        // add the sha
+        tree_content.extend(hex::decode(entry.2).unwrap());
         
     }
     
     // flatten the tree content
-
-
-    // create the tree object
-    let mut tree_content = tree_content.concat();
-    // convert the tree content to string
     let tree_content = String::from_utf8(tree_content).unwrap();
-    // add the header
-    let tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
+
+    // hash the content
     let mut hasher = Sha1::new();
     hasher.update(tree_content.clone());
     let result = hasher.finalize();
+    // hash in hex format
     let hash = format!("{:x}", result);
     
     // create the object file
