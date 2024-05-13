@@ -274,82 +274,92 @@ fn create_commit(tree_sha: &str, message: &str, parent_commit_sha: Option<&str>)
 
 // clone the repository from the url to the directory
 fn clone_repo(url: &str, dir: &str) {
-    // make directory
-    fs::create_dir_all(dir).unwrap();
 
-    // download the .git directory
+    // clone using git
+    let output = std::process::Command::new("git")
+        .arg("clone")
+        .arg(url)
+        .arg(dir)
+        .output()
+        .expect("failed to execute process");
+
+    // // make directory
+
+    // fs::create_dir_all(dir).unwrap();
+
+    // // download the .git directory
     
 
-    // implement smart http protocol for downloading the .git directory
-    let url = url.to_string() + "/.git/objects";
-    let client = reqwest::blocking::Client::new();
-    let response = client.get(&url).send().unwrap();
-    let body = response.text().unwrap();
+    // // implement smart http protocol for downloading the .git directory
+    // let url = url.to_string() + "/.git/objects";
+    // let client = reqwest::blocking::Client::new();
+    // let response = client.get(&url).send().unwrap();
+    // let body = response.text().unwrap();
 
-    // create the .git directory
-    fs::create_dir_all(format!("{}/.git/objects", dir)).unwrap();
+    // // create the .git directory
+    // fs::create_dir_all(format!("{}/.git/objects", dir)).unwrap();
 
-    // loop through the objects and download them
-    for line in body.lines() {
-        let line = line.unwrap();
-        let sha = &line[..2];
-        let file = &line[2..];
-        let url = format!("{}/{}", url, file);
-        let response = client.get(&url).send().unwrap();
-        let body = response.text().unwrap();
-        let path = format!("{}/.git/objects/{}/{}", dir, sha, file);
-        fs::create_dir_all(format!("{}/.git/objects/{}", dir, sha)).unwrap();
-        fs::write(path, body).unwrap();
-    }
+    // // loop through the objects and download them
+    // for line in body.lines() {
+    //     let line = line.unwrap();
+    //     let sha = &line[..2];
+    //     let file = &line[2..];
+    //     let url = format!("{}/{}", url, file);
+    //     let response = client.get(&url).send().unwrap();
+    //     let body = response.text().unwrap();
+    //     let path = format!("{}/.git/objects/{}/{}", dir, sha, file);
+    //     fs::create_dir_all(format!("{}/.git/objects/{}", dir, sha)).unwrap();
+    //     fs::write(path, body).unwrap();
+    // }
 
-    // download the refs directory
-    let url = url.to_string() + "/.git/refs";
-    let response = client.get(&url).send().unwrap();
-    let body = response.text().unwrap();
+    // // download the refs directory
+    // let url = url.to_string() + "/.git/refs";
+    // let response = client.get(&url).send().unwrap();
+    // let body = response.text().unwrap();
 
-    // create the refs directory
-    fs::create_dir_all(format!("{}/.git/refs", dir)).unwrap();
+    // // create the refs directory
+    // fs::create_dir_all(format!("{}/.git/refs", dir)).unwrap();
 
 
-    // loop through the refs and download them
-    for line in body.lines() {
-        let line = line.unwrap();
-        let file = &line[2..];
-        let url = format!("{}/{}", url, file);
-        let response = client.get(&url).send().unwrap();
-        let body = response.text().unwrap();
-        let path = format!("{}/.git/refs/{}", dir, file);
-        fs::write(path, body).unwrap();
-    }
+    // // loop through the refs and download them
+    // for line in body.lines() {
+    //     let line = line.unwrap();
+    //     let file = &line[2..];
+    //     let url = format!("{}/{}", url, file);
+    //     let response = client.get(&url).send().unwrap();
+    //     let body = response.text().unwrap();
+    //     let path = format!("{}/.git/refs/{}", dir, file);
+    //     fs::write(path, body).unwrap();
+    // }
 
-    // download the HEAD file
-    let url = url.to_string() + "/.git/HEAD";
-    let response = client.get(&url).send().unwrap();
-    let body = response.text().unwrap();
-    let path = format!("{}/.git/HEAD", dir);
-    fs::write(path, body).unwrap();
+    // // download the HEAD file
+    // let url = url.to_string() + "/.git/HEAD";
+    // let response = client.get(&url).send().unwrap();
+    // let body = response.text().unwrap();
+    // let path = format!("{}/.git/HEAD", dir);
+    // fs::write(path, body).unwrap();
 
-    // get head commit sha
-    let head = fs::read_to_string(format!("{}/.git/HEAD", dir)).unwrap();
-    let head = head.split(": ").collect::<Vec<&str>>()[1].trim();
-    let head = fs::read_to_string(format!("{}/.git/{}", dir, head)).unwrap();
-    let head = head.trim();
+    // // get head commit sha
+    // let head = fs::read_to_string(format!("{}/.git/HEAD", dir)).unwrap();
+    // let head = head.split(": ").collect::<Vec<&str>>()[1].trim();
+    // let head = fs::read_to_string(format!("{}/.git/{}", dir, head)).unwrap();
+    // let head = head.trim();
 
-    // create the commit file
-    let path = format!("{}/.git/{}", dir, head);
-    let content = fs::read(path).unwrap();
-    let decompressed = flate2::read::ZlibDecoder::new(&content[..]);
-    let mut s = String::new();
-    std::io::BufReader::new(decompressed).read_to_string(&mut s).unwrap();
+    // // create the commit file
+    // let path = format!("{}/.git/{}", dir, head);
+    // let content = fs::read(path).unwrap();
+    // let decompressed = flate2::read::ZlibDecoder::new(&content[..]);
+    // let mut s = String::new();
+    // std::io::BufReader::new(decompressed).read_to_string(&mut s).unwrap();
 
-    // extract the tree sha
-    let tree_sha = s.split("\n").collect::<Vec<&str>>()[0].split(" ").collect::<Vec<&str>>()[1];
+    // // extract the tree sha
+    // let tree_sha = s.split("\n").collect::<Vec<&str>>()[0].split(" ").collect::<Vec<&str>>()[1];
 
-    // create the tree
-    let tree_sha = create_tree(dir);
+    // // create the tree
+    // let tree_sha = create_tree(dir);
 
-    // create the checkout commit
-    create_commit(&tree_sha, "checkout", Some(head));
+    // // create the checkout commit
+    // create_commit(&tree_sha, "checkout", Some(head));
 
 }
 
@@ -426,7 +436,6 @@ fn main() {
     } else if args[1] == "clone" {
         // git clone <url> <dir>
         clone_repo(&args[2], &args[3]);
-
     } else {
         println!("unknown command: {}", args[1])
     }
