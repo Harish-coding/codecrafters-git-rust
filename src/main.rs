@@ -198,7 +198,7 @@ fn create_tree(dir: &str) -> String {
     }
     
     // join the tree content 
-    let tree_content = tree_content.join("");
+    tree_content = tree_content.concat();
     
     // create the tree object
     let tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
