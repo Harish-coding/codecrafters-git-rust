@@ -159,7 +159,8 @@ fn create_tree(dir: &str) -> String {
             let mut hasher = Sha1::new();
             hasher.update(header.clone());
             let result = hasher.finalize();
-            let hash = result.to_vec();
+            // hash in hex format
+            let hash = format!("{}", result);
 
             // store the entry
             entries_vec.push((100644, file_name, hash));
