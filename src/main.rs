@@ -192,11 +192,14 @@ fn create_tree(dir: &str) -> String {
         let hash = hash.to_vec();
 
         // push the entry to the tree content as bytes
-        tree_content.push(format!("{:o} {}\0", entry.0, entry.1).as_bytes().to_vec());
+        tree_content.push(format!("{:o} {}\0", entry.0, entry.1).as_bytes());
         tree_content.push(hash);
         
     }
     
+    // flatten the tree content
+
+
     // create the tree object
     let tree_content = format!("tree {}\0{}", tree_content.len(), tree_content);
     let mut hasher = Sha1::new();
