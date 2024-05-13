@@ -211,7 +211,7 @@ fn create_tree(dir: &str) -> String {
     fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
     let mut file = fs::File::create(path).unwrap();
     let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-    encoder.write_all(tree_content.as_bytes()).unwrap();
+    encoder.write_all(&tree_content).unwrap();
     let compressed = encoder.finish().unwrap();
     file.write_all(&compressed).unwrap();
     
