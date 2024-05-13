@@ -230,9 +230,22 @@ fn create_tree(dir: &str) -> String {
 }
 
 
-fn commit_tree(tree_sha: &str, commit_sha: &str, message: &str) {
+// take tree sha, commit message, and optional parent commit sha and return the commit sha
+fn create_commit(tree_sha: &str, message: &str, parent_commit_sha: Option<&str>) -> String {
     // create the commit content
-    let commit_content = format!("tree {}\nparent {}\nauthor {}\ncommitter {}\n\n{}\n", tree_sha, commit_sha, "author", "committer", message);
+    let mut commit_content = Vec::new();
+    // add the tree sha
+    commit_content.extend(format!("tree {}\n", tree_sha).as_bytes());
+    // add the parent commit sha if present
+    if let Some(parent_commit_sha) = parent_commit_sha {
+        commit_content.extend(format!("parent {}\n", parent_commit_sha).as_bytes());
+    }
+    // add the author
+    commit_content.extend("author <author> <email> <timestamp>\n".as_bytes());
+    // add the committer
+    commit_content.extend("committer <committer> <email> <timestamp>\n".as_bytes());
+    // add the message
+    commit_content.extend(format!("\n{}\n", message).as_bytes());
 
     // hash the content
     let mut hasher = Sha1::new();
@@ -246,12 +259,12 @@ fn commit_tree(tree_sha: &str, commit_sha: &str, message: &str) {
     fs::create_dir_all(format!(".git/objects/{}", &hash[..2])).unwrap();
     let mut file = fs::File::create(path).unwrap();
     let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-    encoder.write_all(commit_content.as_bytes()).unwrap();
+    encoder.write_all(&commit_content).unwrap();
     let compressed = encoder.finish().unwrap();
     file.write_all(&compressed).unwrap();
 
-    // print the hash
-    println!("{}", hash);
+    // return the hash as string
+    hash
 }
 
 
@@ -303,7 +316,25 @@ fn main() {
 
     } else if args[1] == "commit-tree" {
         // git commit-tree <tree_sha> -p <commit_sha> -m <message> 
+        // git commit-tree <tree_sha> -m <message> 
 
+        // check if the args[3] is -p
+        let parent_commit_sha = if args[3] == "-p" {
+            Some(&args[4])
+        } else {
+            None
+        };
+
+        // check if the args[4] is -m
+        let message = if args[3] == "-m" {
+            &args[4]
+        } else {
+            &args[6]
+        };
+
+        // print the hash
+        println!("{}", create_commit(&args[2], message, parent_commit_sha));
+        
     } else {
         println!("unknown command: {}", args[1])
     }
